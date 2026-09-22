@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mans Budžets</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f6f3ef;color:#292725}
+.app{max-width:520px;margin:auto;min-height:100vh;padding:20px 16px 90px}
+h1{font-size:28px;margin:4px 0 18px}.card{background:white;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 3px 14px #0000000b}
+.balance{font-size:34px;font-weight:700;margin:6px 0}.muted{color:#777;font-size:14px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{padding:14px;border-radius:14px;background:#f4f1ed}.stat b{display:block;font-size:21px;margin-top:5px}
+button,input,select{font:inherit;border:0;border-radius:12px;padding:12px}
+button{background:#292725;color:white;cursor:pointer}.secondary{background:#eee9e3;color:#292725}
+input,select{background:#f3f1ee;width:100%;outline:none}
+form{display:grid;gap:10px}.expense{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.expense:last-child{border:0}
+.amount{font-weight:700}.plus{color:#26734d}.minus{color:#a33d3d}
+.progress{height:10px;background:#eee;border-radius:10px;overflow:hidden;margin-top:8px}.bar{height:100%;background:#292725}
+nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #eee;padding:10px;text-align:center;z-index:10}
+.tab-btn{margin:0 3px}.tab-btn.active{background:#292725;color:#fff}.tab-page{display:none}.tab-page.active{display:block}
+.calendar-nav{display:flex;align-items:center;gap:8px}
+.calendar-nav button{padding:6px 10px}
+.calendar-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+.calendar-summary div{background:#f4f1ed;border-radius:12px;padding:10px;text-align:center}
+.calendar-summary b{display:block;margin-top:4px}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.calendar-weekdays{margin-bottom:4px}
+.calendar-weekdays span{text-align:center;font-size:11px;color:#777;font-weight:700;padding:4px 0}
+.calendar-weekdays span:last-child{color:#b66}
+.day{min-height:78px;background:#faf8f5;border-radius:8px;padding:5px 4px;overflow:hidden;border:1px solid transparent}
+.day.empty{background:transparent}
+.day.weekend{background:#f5f5f5;color:#aaa}
+.day.today{border-color:#292725}
+.day .num{font-weight:700;font-size:13px;margin-bottom:4px}
+.day .allow{display:block;font-size:12px;font-weight:700;background:#f7c99c;border-radius:5px;padding:3px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day .spent{display:block;font-size:10px;margin-top:3px;color:#8a4a4a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day .remaining{display:block;font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day.negative .allow{background:#aebeea;color:#26365f}
+.day.negative .remaining{color:#a33d3d;font-weight:700}
+.day.positive .remaining{color:#26734d;font-weight:700}
+.day.clickable{cursor:pointer}
+.day.clickable:active{transform:scale(.98)}
+
+nav button{margin:0 3px}
+.small{font-size:12px}
+.budget-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:5px}.budget-weekdays>div{text-align:center;font-size:11px;color:#777;font-weight:600}.budget-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.budget-head{font-size:11px;text-align:center;color:#777;padding:5px 0}
+.budget-day{min-height:108px;background:#faf9f7;border-radius:10px;padding:7px;position:relative;border:1px solid #eee}
+.budget-day.weekend{background:#f4f4f4;color:#aaa}
+.budget-day.empty{background:transparent;border:0}
+.budget-day.today{outline:3px solid #292725;outline-offset:-2px}
+.day-num{font-weight:700;font-size:11px;white-space:nowrap}
+.day-budget{margin-top:5px;background:#f4b56f;border-radius:6px;padding:5px 1px;font-size:8px;line-height:1.1;color:#4f3218;font-weight:500;white-space:nowrap;text-align:center;letter-spacing:-.25px}
+.day-expense{margin-top:3px;background:#315b91;color:white;border-radius:6px;padding:5px 1px;font-size:8px;line-height:1.1;font-weight:500;white-space:nowrap;text-align:center;letter-spacing:-.25px}
+.carry-positive{font-size:8px;font-weight:500;letter-spacing:-0.25px;background:#cfe8f7;color:#183b4f;border-radius:9px;padding:5px 3px;margin-top:2px;text-align:center}.day-balance{margin-top:3px;background:#9bd5b5;color:#174b31;border-radius:6px;padding:5px 1px;font-size:8px;line-height:1.1;font-weight:500;white-space:nowrap;text-align:center;letter-spacing:-.25px}
+.day-balance.negative{background:#f2b5b5;color:#7a2020}
+@media(max-width:420px){.budget-day{min-height:82px;padding:5px}.day-budget,.day-expense,.day-balance{font-size:8px;font-weight:500;letter-spacing:-.25px}}
+#savingsLineChart{display:block;font-family:inherit}
+#savingsLineChart .gridline{stroke:#e5e5e5;stroke-width:1}
+#savingsLineChart .axislabel{fill:#777;font-size:11px}
+#savingsLineChart .line{fill:none;stroke:#315b91;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#savingsLineChart .dot{fill:#315b91}
+#savingsLineChart .zero{stroke:#bbb;stroke-width:1}
+@media(max-width:600px){
+.calendar-summary{grid-template-columns:repeat(2,1fr)}
+}
+.day-balance.carry-positive{
+  background:#cfe8f7 !important;
+  color:#183b4f !important;
+}
+.day-balance.first-positive{
+  background:#cfe8f7 !important;
+  color:#183b4f !important;
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#292725">
+</head>
+<body>
+<div class="app">
+<h1>Mans budžets</h1>
+<div id="budgetPage" class="tab-page active">
+
+<div class="card">
+ <div class="muted">Šī mēneša atlikums</div>
+ <div class="balance" id="balance">€0.00</div>
+ <div class="grid">
+  <div class="stat"><span class="muted">Ienākumi</span><b id="income">€0.00</b></div>
+  <div class="stat"><span class="muted">Tēriņi</span><b id="spent">€0.00</b></div>
+ </div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Pievienot darījumu</b><span class="muted small">Saglabājas telefonā</span></div>
+ <form id="form" style="margin-top:12px">
+  <input id="amount" type="text" inputmode="decimal" placeholder="Summa (€), piem. 88.40" required>
+  <select id="sign">
+   <option value="1">Pozitīva summa (+)</option>
+   <option value="-1">Negatīva summa (−)</option>
+  </select>
+  <select id="type">
+   <option value="expense">Tēriņš</option><option value="income">Ienākums</option>
+  </select>
+  <select id="category">
+   <option>Pārtika</option><option>Atis</option><option>Mājoklis</option>
+   <option>Higiēna</option><option>Transports</option><option>Apģērbs</option>
+   <option>Atpūta</option><option>Dāvana</option><option>Cits</option>
+  </select>
+  <input id="date" type="date">
+  <input id="note" placeholder="Par ko? (piem. Lidl)">
+  <button type="submit">Pievienot</button>
+ </form>
+</div>
+
+
+
+
+<div class="card">
+ <div class="row"><b>Uzkrājums šomēnes</b><span class="muted">Mērķis €300</span></div>
+ <div class="balance" id="saved">€0.00</div>
+ <div class="muted" id="saveStatus">€0 no €300</div>
+ <div class="progress"><div class="bar" id="saveBar" style="width:0%"></div></div>
+ <div id="saveWarning" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Šī mēneša tēriņi pa kategorijām</b></div>
+ <div id="categories" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Uzkrājumu vēsture</b><span class="muted">pa mēnešiem</span></div>
+ <div id="savingsHistory" style="margin-top:12px"></div>
+ <div style="margin-top:14px" id="chart"></div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Kopējie ietaupījumi</b><span class="muted">uzkrājumu bilance</span></div>
+ <div class="balance" id="totalSaved">€0.00</div>
+ <div class="muted">Kumulatīvi visos ievadītajos mēnešos</div>
+ <div style="margin-top:14px" id="totalChart"></div>
+ <div style="margin-top:18px">
+   <div class="muted" style="margin-bottom:8px">Ietaupījumu līkne pa visiem mēnešiem</div>
+   <svg id="savingsLineChart" viewBox="0 0 500 230" width="100%" height="230" style="background:#faf9f7;border-radius:14px"></svg>
+ </div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Pēdējie darījumi</b><button class="secondary small" onclick="clearAll()">Dzēst visu</button></div>
+ <div id="transactions" style="margin-top:8px"></div>
+</div>
+
+<div class="card" id="editCard" style="display:none">
+ <div class="row"><b>Labot darījumu</b><button class="secondary small" type="button" onclick="cancelEdit()">Atcelt</button></div>
+ <form id="editForm" style="margin-top:12px">
+  <input id="editAmount" type="text" inputmode="decimal" placeholder="Summa" required>
+  <select id="editSign">
+   <option value="1">Pozitīva summa (+)</option>
+   <option value="-1">Negatīva summa (−)</option>
+  </select>
+  <select id="editType">
+   <option value="expense">Tēriņš</option><option value="income">Ienākums</option><option value="saving">Uzkrājuma korekcija</option>
+  </select>
+  <select id="editCategory"></select>
+  <input id="editDate" type="date" required>
+  <input id="editNote" placeholder="Par ko?">
+  <button type="submit">Saglabāt izmaiņas</button>
+ </form>
+</div>
+</div>
+
+<div id="calendarPage" class="tab-page">
+  <div class="card">
+    <div class="row"><b>Budžeta kalendārs</b><div class="calendar-nav"><button type="button" onclick="changeBudgetMonth(-1)">‹</button><button type="button" onclick="changeBudgetMonth(1)">›</button></div></div>
+    <div id="budgetPeriod" class="muted" style="margin-top:8px"></div>
+    <div style="margin-top:14px"><label for="calendarBudgetInput">Budžets šim periodam (€)</label><input id="calendarBudgetInput" type="number" inputmode="decimal" min="0" step="0.01" value="700" onchange="setBudgetAmount(this.value)"></div>
+    <div class="calendar-summary">
+      <div><span class="muted small">Budžets</span><b id="calendarBudget">€700,00</b></div>
+      <div><span class="muted small">Darba dienas</span><b id="calendarWorkdays">0</b></div>
+      <div><span class="muted small">Dienas budžets</span><b id="dailyBudget">€0,00</b></div>
+      <div><span class="muted small">Kopējie izdevumi</span><b id="calendarTotalExpenses">€0,00</b></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="muted" style="margin-bottom:8px">Izdevumi no budžeta pārskata tiek automātiski parādīti attiecīgajos datumos.</div>
+    <div id="budgetCalendar"></div>
+  </div>
+</div>
+
+
+</div>
+
+<nav>
+<button class="tab-btn active" id="tabBudget" onclick="showPage('budgetPage',this)">Budžets</button>
+<button class="tab-btn" id="tabCalendar" onclick="showPage('calendarPage',this)">Kalendārs</button>
+</nav>
+
+<script>
+const KEY='mans_budzets_v3';
+const TARGET=300;
+let data=JSON.parse(localStorage.getItem(KEY)||'[]');
+const cats=['Pārtika','Atis','Mājoklis','Higiēna','Transports','Apģērbs','Atpūta','Dāvana','Cits'];
+const dateEl=document.getElementById('date');
+dateEl.value=localDateKey(new Date());
+
+function eur(n){return new Intl.NumberFormat('lv-LV',{style:'currency',currency:'EUR'}).format(n)}
+function fmtMoney(n){return eur(n)}
+function localDateKey(d){
+ let x=d instanceof Date?d:new Date(d);
+ return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+}
+function parseLocalDate(v){
+ if(v instanceof Date) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+ if(typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v)){
+   const [y,m,d]=v.split('-').map(Number);
+   return new Date(y,m-1,d);
+ }
+ const x=new Date(v);
+ return new Date(x.getFullYear(),x.getMonth(),x.getDate());
+}
+function fmtDate(d){return parseLocalDate(d).toLocaleDateString('lv-LV',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function monthKey(d){let x=parseLocalDate(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')}
+function monthLabel(key){let [y,m]=key.split('-');return new Date(+y,+m-1,1).toLocaleDateString('lv-LV',{month:'long',year:'numeric'})}
+function itemsFor(key){return data.filter(x=>monthKey(x.date)===key)}
+function currentKey(){return monthKey(new Date())}
+
+let calendarMonthKey=currentKey();
+let calendarSettings=JSON.parse(localStorage.getItem('mans_budzets_calendar_settings')||'{}');
+
+function calendarSetting(key){ return {budget:getBudgetSettings().amount,workdaysOnly:true}; }
+function monthlySaved(key){
+ return itemsFor(key).filter(x=>x.type==='saving').reduce((s,x)=>s+x.amount,0);
+}
+
+function render(){
+ const key=currentKey(), items=itemsFor(key);
+ const income=items.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0);
+ const spent=items.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0);
+ const saved=monthlySaved(key);
+ document.getElementById('income').textContent=eur(income);
+ document.getElementById('spent').textContent=eur(spent);
+ document.getElementById('balance').textContent=eur(income-spent-saved);
+ document.getElementById('saved').textContent=eur(saved);
+ document.getElementById('saveStatus').textContent=eur(saved)+' no '+eur(TARGET);
+ document.getElementById('saveBar').style.width=Math.min(Math.max(saved,0)/TARGET*100,100)+'%';
+ document.getElementById('saveWarning').innerHTML=saved<TARGET
+   ? '<b style="color:#a33d3d">Ietaupīts par '+eur(TARGET-saved)+' mazāk nekā mērķis</b>'
+   : saved===TARGET ? '<b>€300 mērķis sasniegts</b>'
+   : '<b style="color:#26734d">Mērķis pārsniegts par '+eur(saved-TARGET)+'</b>';
+
+ const totals={}; cats.forEach(c=>totals[c]=0);
+ items.filter(x=>x.type==='expense').forEach(x=>totals[x.category]=(totals[x.category]||0)+x.amount);
+ const max=Math.max(...Object.values(totals),1);
+ document.getElementById('categories').innerHTML=cats.filter(c=>totals[c]>0).map(c=>`
+  <div style="margin:12px 0"><div class="row"><span>${c}</span><b>${eur(totals[c])}</b></div>
+  <div class="progress"><div class="bar" style="width:${totals[c]/max*100}%"></div></div></div>`).join('') || '<div class="muted">Šomēnes vēl nav tēriņu.</div>';
+
+ document.getElementById('transactions').innerHTML=data.slice().reverse().map((x,reverseIndex)=>{ const index=data.length-1-reverseIndex;
+   const sign=x.type==='income'?'+':'';
+   const cat=x.type==='saving'?'Uzkrājuma korekcija':x.category;
+   const cls=x.type==='income'?'plus':(x.amount<0?'plus':'minus');
+   return `<div class="expense">
+     <div><b>${cat}</b><div class="muted">${x.note||''} · ${parseLocalDate(x.date).toLocaleDateString('lv-LV')}</div></div>
+     <div style="text-align:right"><div class="amount ${cls}">${sign}${eur(x.amount)}</div>
+     <button class="secondary small" type="button" onclick="editTransaction(${index})" style="margin-top:5px">Labot</button>
+     <button class="secondary small" type="button" onclick="deleteTransaction(${index})" style="margin-top:5px">Dzēst</button></div>
+   </div>`;
+ }).join('') || '<div class="muted">Nav darījumu.</div>';
+
+ renderSavingsHistory();
+ renderSavingsChart();
+ renderBudgetCalendar();
+ renderSavingsLineChart();
+}
+
+function renderSavingsHistory(){
+ const keys=[...new Set(data.map(x=>monthKey(x.date)))];
+ const current=currentKey();
+ if(!keys.includes(current)) keys.push(current);
+ keys.sort();
+
+ const rows=keys.map(k=>({k,s:monthlySaved(k)}));
+ document.getElementById('savingsHistory').innerHTML=rows.map(r=>{
+   const under=r.s<TARGET;
+   return `<div class="expense"><div><b>${monthLabel(r.k)}</b><div class="muted">Mērķis ${eur(TARGET)}</div></div>
+   <div class="amount ${under?'minus':'plus'}">${eur(r.s)}${under?' ⚠':''}</div></div>`;
+ }).join('') || '<div class="muted">Vēl nav datu.</div>';
+
+ const max=Math.max(...rows.map(r=>Math.abs(r.s)),TARGET,1);
+ document.getElementById('chart').innerHTML=`
+   <div class="muted" style="margin-bottom:8px">Ietaupīts katrā mēnesī</div>
+   ${rows.map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:7px 0">
+      <span style="width:82px;font-size:12px">${monthLabel(r.k)}</span>
+      <div class="progress" style="flex:1"><div class="bar" style="width:${Math.min(Math.abs(r.s)/max*100,100)}%"></div></div>
+      <span style="width:65px;text-align:right;font-size:12px">${eur(r.s)}</span>
+   </div>`).join('')}`;
+
+ // Cumulative total chart
+ let cumulative=0;
+ const cumulativeRows=rows.map(r=>{cumulative+=r.s; return {...r,total:cumulative}});
+ const total=cumulative;
+ document.getElementById('totalSaved').textContent=eur(total);
+ const absMax=Math.max(...cumulativeRows.map(r=>Math.abs(r.total)),1);
+ document.getElementById('totalChart').innerHTML=`
+   <div class="muted" style="margin-bottom:8px">Kopējais uzkrājums laika gaitā</div>
+   ${cumulativeRows.map(r=>`<div style="display:flex;align-items:center;gap:8px;margin:7px 0">
+      <span style="width:82px;font-size:12px">${monthLabel(r.k)}</span>
+      <div class="progress" style="flex:1"><div class="bar" style="width:${Math.min(Math.abs(r.total)/absMax*100,100)}%"></div></div>
+      <span style="width:65px;text-align:right;font-size:12px">${eur(r.total)}</span>
+   </div>`).join('')}`;
+}
+
+document.getElementById('form').addEventListener('submit',e=>{
+ e.preventDefault();
+ let raw=document.getElementById('amount').value.trim().replace(',','.');
+ let amount=parseFloat(raw);
+ amount=amount*Math.sign(parseFloat(document.getElementById('sign').value));
+ const type=document.getElementById('type').value;
+ const category=document.getElementById('category').value;
+ const note=document.getElementById('note').value;
+ const date=dateEl.value || localDateKey(new Date());
+ if(isNaN(amount))return;
+ // Negative savings are allowed and reduce that month's savings/cumulative total.
+ if(type==='saving'){
+   data.push({amount,type,category,note,date});
+ } else {
+   // For normal expense/income entries, keep the entered sign as-is.
+   data.push({amount,type,category,note,date});
+ }
+ e.target.reset(); document.getElementById('sign').value='1'; dateEl.value=localDateKey(new Date()); save();
+});
+
+document.getElementById('type').innerHTML='<option value="expense">Tēriņš</option><option value="income">Ienākums</option><option value="saving">Uzkrājuma korekcija</option>';
+
+let editingIndex=null;
+
+function editTransaction(index){
+ editingIndex=index;
+ const x=data[index];
+ document.getElementById('editCard').style.display='block';
+ document.getElementById('editAmount').value=Math.abs(x.amount).toFixed(2);
+ document.getElementById('editSign').value=x.amount<0?'-1':'1';
+ document.getElementById('editType').value=x.type;
+ document.getElementById('editDate').value=x.date;
+ document.getElementById('editNote').value=x.note||'';
+ document.getElementById('editCategory').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
+ document.getElementById('editCategory').value=x.category||'Cits';
+ document.getElementById('editCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cancelEdit(){
+ editingIndex=null;
+ document.getElementById('editCard').style.display='none';
+}
+
+document.getElementById('editForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ if(editingIndex===null)return;
+ let raw=document.getElementById('editAmount').value.trim().replace(',','.');
+ let amount=parseFloat(raw);
+ if(isNaN(amount))return;
+ amount=Math.abs(amount)*parseInt(document.getElementById('editSign').value);
+ data[editingIndex]={
+   amount,
+   type:document.getElementById('editType').value,
+   category:document.getElementById('editCategory').value,
+   note:document.getElementById('editNote').value,
+   date:document.getElementById('editDate').value
+ };
+ cancelEdit();
+ save();
+});
+
+function renderSavingsLineChart(){
+ const keys=[...new Set(data.map(x=>monthKey(x.date)))];
+ const current=currentKey(); if(!keys.includes(current)) keys.push(current);
+ keys.sort();
+ const rows=keys.map(k=>({k,s:monthlySaved(k)}));
+ const svg=document.getElementById('savingsLineChart');
+ if(!rows.length){svg.innerHTML='';return;}
+ const W=500,H=240,L=48,R=16,T=24,B=50;
+ const vals=rows.map(r=>r.s);
+ const min=Math.min(0,...vals), max=Math.max(TARGET,...vals);
+ const range=max-min||1;
+ const x=i=>L+(rows.length===1?(W-L-R)/2:(W-L-R)*i/(rows.length-1));
+ const y=v=>T+(H-T-B)*(max-v)/range;
+ const path=rows.map((r,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(r.s).toFixed(1)).join(' ');
+ const targetY=y(TARGET);
+ const labels=rows.map((r,i)=>`<text x="${x(i)}" y="${H-15}" text-anchor="middle" font-size="9">${monthLabel(r.k).slice(0,3)}</text>`).join('');
+ const dots=rows.map((r,i)=>`<circle cx="${x(i)}" cy="${y(r.s)}" r="4"><title>${monthLabel(r.k)}: ${eur(r.s)}</title></circle>`).join('');
+ svg.innerHTML=`
+ <line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#ddd"/>
+ <line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#ddd"/>
+ <line x1="${L}" y1="${targetY}" x2="${W-R}" y2="${targetY}" stroke="#999" stroke-dasharray="5 4"/>
+ <text x="${W-R}" y="${targetY-5}" text-anchor="end" font-size="10">Mērķis €300</text>
+ <path d="${path}" fill="none" stroke="currentColor" stroke-width="3"/>
+ ${dots}${labels}
+ <text x="8" y="${T+4}" font-size="10">${eur(max)}</text>
+ <text x="8" y="${H-B+4}" font-size="10">${eur(min)}</text>`;
+}
+
+let budgetViewDate=new Date(2026,8,15);
+
+function getBudgetSettings(){
+ const saved=JSON.parse(localStorage.getItem('budgetSettings')||'{}');
+ return {amount:Number(saved.amount||700)};
+}
+function setBudgetAmount(v){
+ const n=Number(v);
+ if(isFinite(n)&&n>=0){localStorage.setItem('budgetSettings',JSON.stringify({amount:n}));renderBudgetCalendar();}
+}
+function budgetCycleFor(viewDate){
+ const y=viewDate.getFullYear(), m=viewDate.getMonth();
+ let startMonth=m;
+ if(viewDate.getDate()<15) startMonth=m-1;
+ const start=new Date(y,startMonth,15);
+ const end=new Date(start.getFullYear(),start.getMonth()+1,14);
+ return {start,end};
+}
+function workingDaysBetween(start,end){
+ const days=[];
+ for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+  const day=d.getDay();
+  if(day!==0&&day!==6) days.push(new Date(d));
+ }
+ return days;
+}
+function dateKey(d){
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
+}
+function expensesOnDay(d){
+ const k=dateKey(d);
+ return data.filter(x=>x.type==='expense' && x.date===k)
+   .reduce((s,x)=>s+Math.abs(Number(x.amount)||0),0);
+}
+function renderBudgetCalendar(){
+  window.__futurePositiveMarked = false;
+  const box=document.getElementById('budgetCalendar');
+  if(!box) return;
+
+  const settings=getBudgetSettings();
+  const {start,end}=budgetCycleFor(budgetViewDate);
+  const workdays=workingDaysBetween(start,end);
+  const daily=workdays.length ? settings.amount/workdays.length : 0;
+
+  document.getElementById('budgetPeriod').textContent =
+    `${fmtDate(start)}–${fmtDate(end)}`;
+  document.getElementById('calendarBudgetInput').value = settings.amount;
+
+  document.getElementById('calendarBudget').textContent=fmtMoney(settings.amount);
+  document.getElementById('calendarWorkdays').textContent=workdays.length;
+  document.getElementById('dailyBudget').textContent=fmtMoney(daily);
+
+  const periodStartKey=localDateKey(start);
+  const periodEndKey=localDateKey(end);
+  const totalPeriodExpenses=data
+    .filter(t=>t.type==='expense' && t.date>=periodStartKey && t.date<=periodEndKey)
+    .reduce((sum,t)=>sum+Number(t.amount||0),0);
+  document.getElementById('calendarTotalExpenses').textContent=fmtMoney(totalPeriodExpenses);
+
+  let out=`<div class="budget-weekdays">
+    <div>P</div><div>O</div><div>T</div><div>C</div><div>P</div><div>S</div><div>Sv</div>
+  </div><div class="budget-grid">`;
+
+  const firstOffset=(start.getDay()+6)%7;
+  for(let i=0;i<firstOffset;i++) out+=`<div class="budget-day empty"></div>`;
+
+  // Carry is the amount that changes the next working day's available budget.
+  // Positive carry = unused budget from the previous workday.
+  // Negative carry = overspend from the previous workday.
+  let carry=0;
+
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const current=new Date(d);
+    const isWeekend=current.getDay()===0 || current.getDay()===6;
+    const isToday=current.getFullYear()===new Date().getFullYear() &&
+                current.getMonth()===new Date().getMonth() &&
+                current.getDate()===new Date().getDate();
+
+    if(isWeekend){
+      out+=`<div class="budget-day weekend${isToday?' today':''}">
+        <div class="day-date">${current.getDate()}</div>
+      </div>`;
+      continue;
+    }
+
+    const dateKey=localDateKey(current);
+    const expense=Number(data
+      .filter(t=>t.type==='expense' && t.date===dateKey)
+      .reduce((s,t)=>s+Number(t.amount||0),0));
+
+    const availableBudget=daily+carry;
+    const balance=availableBudget-expense;
+    const expenseText=expense>0
+      ? `<div class="day-expense">−${fmtMoney(expense)}</div>` : '';
+
+    // Highlight only the first positive balance after a period with no
+    // positive balance. If later spending makes the balance non-positive,
+    // the next positive balance becomes the next light-blue one.
+    const todayForHighlight = new Date();
+    todayForHighlight.setHours(0,0,0,0);
+    const isFutureWorkday = current > todayForHighlight;
+
+    // Gaiši zilu rāda tikai pirmo nākamo darba dienu pēc šodienas,
+    // kurā atlikums kļūst pozitīvs. Iepriekšējās pozitīvās dienas paliek zaļas.
+    const firstPositive = !window.__futurePositiveMarked &&
+                          isFutureWorkday &&
+                          balance > 0.005;
+    if(firstPositive) window.__futurePositiveMarked = true;
+
+    const balanceClass = 'day-balance';
+    const positiveClass = firstPositive ? ' first-positive' : '';
+
+    const balanceText=balance>=0
+      ? `<div class="${balanceClass}${positiveClass}">${fmtMoney(balance)}</div>`
+      : `<div class="${balanceClass}">−${fmtMoney(Math.abs(balance))}</div>`;
+
+    out+=`<div class="budget-day${isToday?' today':''}">
+      <div class="day-date">${current.getDate()}</div>
+      <div class="day-budget">${fmtMoney(daily)}</div>
+      ${expenseText}
+      ${balanceText}
+    </div>`;
+
+    // Remaining amount or overspend becomes the next working day's
+    // budget adjustment.
+    carry=balance;
+  }
+
+  out+='</div>';
+  box.innerHTML=out;
+}
+
+function changeBudgetMonth(delta){
+ budgetViewDate.setMonth(budgetViewDate.getMonth()+delta);
+ renderBudgetCalendar();
+}
+function renderSavingsChart(){
+ const svg=document.getElementById('savingsLineChart');
+ if(!svg) return;
+
+ // Aggregate savings by month from the savings records.
+ const months={};
+ data.forEach(x=>{
+   if(x.type!=='saving') return;
+   const k=monthKey(x.date);
+   months[k]=(months[k]||0)+Number(x.amount||0);
+ });
+
+ const keys=Object.keys(months).sort();
+ if(!keys.length){
+   svg.innerHTML='<text x="260" y="130" text-anchor="middle" fill="#777" font-size="13">Vēl nav uzkrājumu datu</text>';
+   return;
+ }
+
+ // Plot cumulative savings across all months.
+ let cumulative=0;
+ const points=keys.map(k=>{
+   cumulative+=months[k];
+   return {k,v:cumulative};
+ });
+
+ const W=520,H=260,L=52,R=18,T=20,B=48;
+ const max=Math.max(0,...points.map(p=>p.v));
+ const min=Math.min(0,...points.map(p=>p.v));
+ const range=(max-min)||1;
+ const x=i=>points.length===1?(L+W-R)/2:L+(W-L-R)*i/(points.length-1);
+ const y=v=>T+(H-T-B)*(max-v)/range;
+
+ let out='';
+ [0,.25,.5,.75,1].forEach(t=>{
+   const val=max-range*t;
+   const yy=y(val);
+   out+=`<line class="gridline" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`;
+   out+=`<text class="axislabel" x="${L-7}" y="${yy+4}" text-anchor="end">${eur(val)}</text>`;
+ });
+
+ if(min<0){
+   const zy=y(0);
+   out+=`<line class="zero" x1="${L}" y1="${zy}" x2="${W-R}" y2="${zy}"/>`;
+ }
+
+ const path=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.v).toFixed(1)).join(' ');
+ out+=`<path class="line" d="${path}"/>`;
+
+ points.forEach((p,i)=>{
+   const label=monthLabel(p.k);
+   out+=`<circle class="dot" cx="${x(i)}" cy="${y(p.v)}" r="4">
+     <title>${label}: ${eur(p.v)}</title>
+   </circle>`;
+   out+=`<text class="axislabel" x="${x(i)}" y="${H-19}" text-anchor="middle">${label.slice(0,3)}</text>`;
+ });
+
+ svg.innerHTML=out;
+}
+function showPage(id,btn){
+  document.querySelectorAll('.tab-page').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  btn.classList.add('active');
+  if(id==='calendarPage'){
+    renderBudgetCalendar();
+    window.scrollTo(0,0);
+  }
+}
+
+function clearAll(){if(confirm('Dzēst visus saglabātos darījumus?')){data=[];save()}}
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+</script>
+</body>
+</html>
