@@ -1,12 +1,12 @@
 {
   "name": "Mans budžets",
   "short_name": "Budžets",
-  "description": "Personīgā budžeta un izdevumu kalendāra lietotne.",
+  "description": "Personīgā budžeta, iepirkumu, recepšu un dienas plānošanas lietotne.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f7f6f2",
+  "background_color": "#f6f3ef",
   "theme_color": "#292725",
   "icons": [
     {
