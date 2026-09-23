@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171614">
+<meta name="description" content="Mans budžets — budžets, pirkumi, receptes, dienas plāns un kalendārs.">
+<link rel="manifest" href="./manifest.webmanifest?v=1">
+<link rel="icon" type="image/svg+xml" href="./icon.svg?v=1">
+<link rel="icon" type="image/png" sizes="192x192" href="./mb-icon-192.png?v=1">
+<link rel="apple-touch-icon" sizes="192x192" href="./mb-icon-192.png?v=1">
+<title>Mans budžets</title>
+<style>
+:root{
+  --bg:#f4f1eb;--card:#fffdfa;--ink:#252320;--muted:#817d76;--line:#e8e2d8;
+  --gold:#c99b52;--gold2:#efd39d;--dark:#1b1917;--green:#b8dfca;--blue:#385a82;
+  --orange:#f3b56d;--shadow:0 10px 30px rgba(34,30,24,.07);--radius:24px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:22px 18px 105px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand-mark{width:42px;height:42px;border-radius:13px;background:#171614;display:grid;place-items:center;color:#e6c681;font-family:Georgia,serif;font-size:18px;font-weight:700;box-shadow:0 5px 16px #0001}
+h1{font-size:27px;line-height:1.1;margin:0;font-weight:800;letter-spacing:-.7px}
+h2{font-size:22px;margin:0 0 16px;letter-spacing:-.3px}
+h3{font-size:17px;margin:0 0 8px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid #eee8de;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px}
+.subtle{color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:15px;padding:12px 15px;background:var(--dark);color:#fff;font-weight:700}
+.btn.secondary{background:#f0ede7;color:var(--ink)}
+.btn.gold{background:var(--gold);color:#201b15}
+.btn.small{padding:9px 11px;border-radius:12px;font-size:13px}
+.icon-btn{width:42px;height:42px;border:0;border-radius:14px;background:var(--dark);color:white;font-size:20px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#f8f5ef;border-radius:15px;padding:13px 14px;color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#c9a66c;box-shadow:0 0 0 3px #c9a66c22}
+.label{font-size:12px;color:var(--muted);font-weight:700;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em}
+.field{margin-bottom:12px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#f3f0eb;border-radius:18px;padding:15px;text-align:center}
+.stat .v{font-size:22px;font-weight:800;margin-top:4px}
+.stat .l{font-size:12px;color:var(--muted)}
+.date-title{font-size:13px;color:var(--muted);font-weight:700}
+.task{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.check{width:24px;height:24px;border-radius:8px;border:1.5px solid #cfc8bc;background:#fff;display:grid;place-items:center;flex:none}
+.task.done .check{background:var(--dark);color:#fff}.task.done .txt{text-decoration:line-through;color:#9a958d}
+.task .txt{flex:1}.delete{border:0;background:none;color:#aaa;font-size:20px}
+.store-section{margin-top:12px}.store-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.shop-item{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.shop-item.done .shop-text{text-decoration:line-through;color:#999}
+.pill{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#f0ece4;font-size:12px;font-weight:700}
+.recipe{padding:14px;border:1px solid var(--line);border-radius:18px;margin-bottom:10px}
+.recipe .ingredients{font-size:13px;color:var(--muted);line-height:1.5}
+.daypick{display:flex;gap:8px;overflow:auto;padding-bottom:5px}.daypick button{white-space:nowrap;border:1px solid var(--line);background:#f4f1eb;border-radius:13px;padding:9px 12px}.daypick button.active{background:var(--dark);color:white}
+.balance{font-size:34px;font-weight:900;letter-spacing:-1px}
+.tx{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}.tx:last-child{border:0}
+.tx-dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex:none}.tx.income .tx-dot{background:#73a987}.tx .desc{flex:1}.tx .amount{font-weight:800}.negative{color:#385a82}.positive{color:#4f8c65}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.period{font-size:18px;font-weight:800}.cal-nav{display:flex;gap:8px}
+.weekdays,.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.weekdays div{text-align:center;font-size:11px;color:#8a857e;font-weight:800;padding:4px 0}
+.day{min-height:82px;border:1px solid #eee9e1;border-radius:14px;background:#fffdfa;padding:7px;position:relative}
+.day.weekend{background:#f4f2ee;color:#aaa}.day.today{border:3px solid var(--dark);padding:5px}
+.day.future-positive{background:#e4f3eb}
+.daynum{font-size:14px;font-weight:800}.daybase{margin-top:8px;background:var(--orange);border-radius:7px;padding:3px 2px;text-align:center;font-size:10px}.dayexp{margin-top:4px;background:var(--blue);color:#fff;border-radius:7px;padding:3px 2px;text-align:center;font-size:10px}.daybal{margin-top:4px;background:var(--green);border-radius:7px;padding:3px 2px;text-align:center;font-size:10px}
+.empty{visibility:hidden}
+.empty-state{padding:25px 5px;text-align:center;color:var(--muted)}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:#f7f4efee;backdrop-filter:blur(15px);border-top:1px solid #e5dfd6;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:20}
+.nav{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.nav button{border:0;background:transparent;border-radius:15px;padding:10px 3px 9px;color:#777;font-size:11px;font-weight:800}
+.nav button .ni{display:block;font-size:18px;line-height:18px;margin-bottom:3px}.nav button.active{background:var(--dark);color:white}
+.modal{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;justify-content:center;z-index:50}.modal.open{display:flex}
+.sheet{width:min(760px,100%);background:var(--card);border-radius:26px 26px 0 0;padding:20px;max-height:88vh;overflow:auto}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#201e1b;color:#fff;padding:11px 15px;border-radius:13px;display:none;z-index:80;font-size:13px}
+.toast.show{display:block}
+@media(max-width:430px){.app{padding-left:13px;padding-right:13px}.card{padding:16px}.nav button{font-size:10px}.nav button .ni{font-size:17px}.day{min-height:76px;padding:6px}.day.today{padding:4px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><div class="brand-mark">MB</div><h1>Mans budžets</h1></div>
+    <button class="icon-btn" onclick="openModal('settingsModal')" aria-label="Iestatījumi">⚙</button>
+  </div>
+
+  <section id="page-list" class="page active">
+    <div class="card">
+      <div class="row between">
+        <div><div class="date-title" id="todayLabel"></div><h2 style="margin-top:4px">Šodien</h2></div>
+        <button class="btn small gold" onclick="openTaskModal()">＋ Pievienot</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+    <div class="card">
+      <div class="row between"><div><h3>Nākamā diena</h3><div class="subtle" id="nextDateLabel"></div></div><span class="pill" id="taskCount"></span></div>
+    </div>
+  </section>
+
+  <section id="page-shop" class="page">
+    <div class="card">
+      <div class="row between"><div><div class="date-title">Iepirkumu saraksts</div><h2 style="margin-top:4px">Šodien</h2></div><button class="btn small gold" onclick="openShopModal()">＋ Pievienot</button></div>
+      <div id="shopList"></div>
+      <button class="btn" style="width:100%;margin-top:14px" onclick="shareShopping()">Nosūtīt vīram</button>
+    </div>
+  </section>
+
+  <section id="page-recipes" class="page">
+    <div class="card">
+      <div class="row between"><div><div class="date-title">Plānošana</div><h2 style="margin-top:4px">Šīs dienas receptes</h2></div><button class="btn small gold" onclick="openRecipeModal()">＋ Recepte</button></div>
+      <div id="todayRecipes"></div>
+    </div>
+    <div class="card">
+      <div class="row between"><h2>Manas receptes</h2><button class="btn small secondary" onclick="openRecipeModal()">＋ Jauna</button></div>
+      <div id="recipeLibrary"></div>
+    </div>
+  </section>
+
+  <section id="page-budget" class="page">
+    <div class="card">
+      <div class="row between"><div><div class="date-title">Šī mēneša nauda</div><h2 style="margin-top:4px">Budžets</h2></div><button class="btn small gold" onclick="openTxModal()">＋ Darījums</button></div>
+      <div class="balance" id="budgetBalance">0,00 €</div>
+      <div class="subtle" style="margin:4px 0 16px">Atlikums</div>
+      <div class="statgrid">
+        <div class="stat"><div class="l">Ienākumi</div><div class="v" id="incomeTotal">0,00 €</div></div>
+        <div class="stat"><div class="l">Izdevumi</div><div class="v" id="expenseTotal">0,00 €</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row between"><h2>Uzkrājums</h2><span class="pill">Mērķis 300 €</span></div>
+      <div class="statgrid">
+        <div class="stat"><div class="l">Šomēnes</div><div class="v" id="savingTotal">0,00 €</div></div>
+        <div class="stat"><div class="l">Uzkrājuma mērķis</div><div class="v">300,00 €</div></div>
+      </div>
+    </div>
+    <div class="card"><h2>Pēdējie darījumi</h2><div id="txList"></div></div>
+  </section>
+
+  <section id="page-calendar" class="page">
+    <div class="card">
+      <div class="cal-head">
+        <div><div class="date-title">Budžeta kalendārs</div><div class="period" id="periodText"></div></div>
+        <div class="cal-nav"><button class="icon-btn" onclick="movePeriod(-1)">‹</button><button class="icon-btn" onclick="movePeriod(1)">›</button></div>
+      </div>
+      <div class="field"><div class="label">Budžets šim periodam (€)</div><input id="periodBudget" type="number" min="0" step=".01" oninput="savePeriodBudget()"></div>
+      <div class="statgrid">
+        <div class="stat"><div class="l">Budžets</div><div class="v" id="calBudget">0,00 €</div></div>
+        <div class="stat"><div class="l">Darba dienas</div><div class="v" id="workdays">0</div></div>
+        <div class="stat"><div class="l">Dienas budžets</div><div class="v" id="dailyBudget">0,00 €</div></div>
+        <div class="stat"><div class="l">Kopējie izdevumi</div><div class="v" id="periodExpenses">0,00 €</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="subtle" style="margin-bottom:12px">Izdevumi no budžeta pārskata tiek automātiski parādīti attiecīgajos datumos.</div>
+      <div class="weekdays"><div>P</div><div>O</div><div>T</div><div>C</div><div>P</div><div>S</div><div>Sv</div></div>
+      <div class="calgrid" id="calendarGrid"></div>
+    </div>
+  </section>
+</div>
+
+<div class="bottom"><div class="nav">
+  <button class="active" data-page="list"><span class="ni">✓</span>Saraksts</button>
+  <button data-page="shop"><span class="ni">🛒</span>Veikals</button>
+  <button data-page="recipes"><span class="ni">⌂</span>Receptes</button>
+  <button data-page="budget"><span class="ni">€</span>Budžets</button>
+  <button data-page="calendar"><span class="ni">▦</span>Kalendārs</button>
+</div></div>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="sheet-head"><h2 id="modalTitle">Pievienot</h2><button class="icon-btn" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+<div id="settingsModal" class="modal" onclick="if(event.target===this)closeModal('settingsModal')"><div class="sheet"><div class="sheet-head"><h2>Iestatījumi</h2><button class="icon-btn" onclick="closeModal('settingsModal')">×</button></div><p class="subtle">Dati tiek saglabāti šajā ierīcē. Lietotne darbojas arī bez interneta, ja tā jau ir ielādēta.</p><button class="btn secondary" style="width:100%" onclick="resetDemo()">Atjaunot tukšu sākumu</button></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY='mans-budzets-v1';
+const stores=['Maxima','Rimi','Drogas','Lidl','TOP','Mego','Bez veikala'];
+const categories=['Pārtika','Māja','Bērns','Transports','Veselība','Apģērbs','Izklaide','Cits'];
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
+ tasks:[], shopping:[], recipes:[
+  {id:1,name:'Vistas zupa',items:['vista','kartupeļi','burkāni','zirņi','sīpols']},
+  {id:2,name:'Pasta ar tomātu mērci',items:['pasta','tomāti','sīpols','ķiploks']}
+ ], planned:{}, transactions:[], periodBudgets:{}
+};
+let periodOffset=0;
+const fmt=n=>Number(n||0).toLocaleString('lv-LV',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const dateKey=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const todayKey=()=>dateKey(new Date());
+const parseKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function showToast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function openModal(id='modal'){document.getElementById(id).classList.add('open')}
+function closeModal(id='modal'){document.getElementById(id).classList.remove('open')}
+function openCustom(title,body){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=body;openModal()}
+function lvDate(d){return d.toLocaleDateString('lv-LV',{day:'2-digit',month:'2-digit',year:'numeric'})}
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById('page-'+b.dataset.page).classList.add('active');render();
+});
+
+function openTaskModal(){
+ openCustom('Pievienot uzdevumu',`<div class="field"><div class="label">Uzdevums</div><input id="fTask" placeholder="Piemēram, izmazgāt veļu"></div><button class="btn" style="width:100%" onclick="addTask()">Saglabāt</button>`);
+}
+function addTask(){const v=document.getElementById('fTask').value.trim();if(!v)return;state.tasks.push({id:Date.now(),text:v,date:todayKey(),done:false});save();closeModal();render();showToast('Uzdevums pievienots')}
+function toggleTask(id){const t=state.tasks.find(x=>x.id===id);if(t)t.done=!t.done;save();render()}
+function deleteTask(id){state.tasks=state.tasks.filter(x=>x.id!==id);save();render()}
+function renderTasks(){
+ const today=state.tasks.filter(t=>t.date===todayKey());
+ document.getElementById('todayLabel').textContent=lvDate(new Date());
+ document.getElementById('nextDateLabel').textContent=lvDate(new Date(Date.now()+86400000));
+ document.getElementById('taskCount').textContent=today.length+' uzdevumi';
+ document.getElementById('taskList').innerHTML=today.length?today.map(t=>`<div class="task ${t.done?'done':''}"><button class="check" onclick="toggleTask(${t.id})">${t.done?'✓':''}</button><div class="txt">${esc(t.text)}</div><button class="delete" onclick="deleteTask(${t.id})">×</button></div>`).join(''):'<div class="empty-state">Šodienai vēl nav pievienotu uzdevumu.</div>';
+}
+
+function openShopModal(){
+ openCustom('Pievienot pirkumu',`<div class="field"><div class="label">Prece</div><input id="fShop" placeholder="Piemēram, piens"></div><div class="field"><div class="label">Veikals</div><select id="fStore">${stores.map(s=>`<option>${s}</option>`).join('')}</select></div><button class="btn" style="width:100%" onclick="addShop()">Pievienot sarakstam</button>`);
+}
+function addShop(){const name=document.getElementById('fShop').value.trim(),store=document.getElementById('fStore').value;if(!name)return;state.shopping.push({id:Date.now(),name,store,date:todayKey(),done:false});save();closeModal();render();showToast('Pirkums pievienots')}
+function toggleShop(id){const x=state.shopping.find(x=>x.id===id);if(x)x.done=!x.done;save();render()}
+function deleteShop(id){state.shopping=state.shopping.filter(x=>x.id!==id);save();render()}
+function renderShop(){
+ const list=state.shopping.filter(x=>x.date===todayKey());
+ if(!list.length){document.getElementById('shopList').innerHTML='<div class="empty-state">Saraksts ir tukšs.</div>';return}
+ document.getElementById('shopList').innerHTML=stores.map(s=>{
+  const a=list.filter(x=>x.store===s);if(!a.length)return '';
+  return `<div class="store-section"><div class="store-head"><h3>${esc(s)}</h3><span class="pill">${a.filter(x=>!x.done).length}</span></div>${a.map(x=>`<div class="shop-item ${x.done?'done':''}"><button class="check" onclick="toggleShop(${x.id})">${x.done?'✓':''}</button><div class="shop-text" style="flex:1">${esc(x.name)}</div><button class="delete" onclick="deleteShop(${x.id})">×</button></div>`).join('')}</div>`;
+ }).join('');
+}
+async function shareShopping(){
+ const list=state.shopping.filter(x=>x.date===todayKey()&&!x.done);
+ if(!list.length){showToast('Nav nenopirktu preču');return}
+ const text=stores.map(s=>{const a=list.filter(x=>x.store===s);return a.length?'📍 '+s+':\n'+a.map(x=>'• '+x.name).join('\n'):''}).filter(Boolean).join('\n\n');
+ if(navigator.share){try{await navigator.share({title:'Iepirkumu saraksts',text})}catch(e){}}else{await navigator.clipboard?.writeText(text);showToast('Saraksts nokopēts')}
+}
+
+function openRecipeModal(editId=null){
+ const r=state.recipes.find(x=>x.id===editId);
+ openCustom(r?'Rediģēt recepti':'Jauna recepte',`<div class="field"><div class="label">Nosaukums</div><input id="fRecipe" value="${r?esc(r.name):''}" placeholder="Receptes nosaukums"></div><div class="field"><div class="label">Produkti</div><textarea id="fItems" rows="5" placeholder="Viens produkts katrā rindā">${r?esc(r.items.join('\n')):''}</textarea></div><button class="btn" style="width:100%" onclick="saveRecipe(${editId||'null'})">Saglabāt recepti</button>`);
+}
+function saveRecipe(id){const name=document.getElementById('fRecipe').value.trim(),items=document.getElementById('fItems').value.split('\n').map(x=>x.trim()).filter(Boolean);if(!name)return;const r={id:id||Date.now(),name,items};if(id)state.recipes=state.recipes.map(x=>x.id===id?r:x);else state.recipes.push(r);save();closeModal();render();showToast('Recepte saglabāta')}
+function deleteRecipe(id){state.recipes=state.recipes.filter(x=>x.id!==id);save();render()}
+function planRecipe(id){const k=todayKey();state.planned[k]=[...(state.planned[k]||[]),id].filter((x,i,a)=>a.indexOf(x)===i);const r=state.recipes.find(x=>x.id===id);if(r)r.items.forEach(name=>{if(!state.shopping.some(x=>x.date===k&&x.name.toLowerCase()===name.toLowerCase()))state.shopping.push({id:Date.now()+Math.random(),name,store:'Bez veikala',date:k,done:false})});save();render();showToast('Recepte pievienota šodienai')}
+function unplanRecipe(id){const k=todayKey();state.planned[k]=(state.planned[k]||[]).filter(x=>x!==id);save();render()}
+function renderRecipes(){
+ const ids=state.planned[todayKey()]||[], planned=ids.map(id=>state.recipes.find(r=>r.id===id)).filter(Boolean);
+ document.getElementById('todayRecipes').innerHTML=planned.length?planned.map(r=>`<div class="recipe"><div class="row between"><h3>${esc(r.name)}</h3><button class="btn small secondary" onclick="unplanRecipe(${r.id})">Noņemt</button></div><div class="ingredients">${r.items.map(esc).join(' · ')}</div></div>`).join(''):'<div class="empty-state">Šodienai nav izvēlēta recepte.</div>';
+ document.getElementById('recipeLibrary').innerHTML=state.recipes.map(r=>`<div class="recipe"><div class="row between"><h3>${esc(r.name)}</h3><div class="row"><button class="btn small gold" onclick="planRecipe(${r.id})">Šodien</button><button class="btn small secondary" onclick="openRecipeModal(${r.id})">✎</button><button class="btn small secondary" onclick="deleteRecipe(${r.id})">×</button></div></div><div class="ingredients">${r.items.map(esc).join(' · ')}</div></div>`).join('')||'<div class="empty-state">Pievieno pirmo recepti.</div>';
+}
+
+function openTxModal(){
+ openCustom('Pievienot darījumu',`<div class="field"><div class="label">Apraksts</div><input id="fDesc" placeholder="Piemēram, Rimi"></div><div class="field"><div class="label">Summa (€)</div><input id="fAmount" type="number" step=".01" placeholder="0,00"></div><div class="field"><div class="label">Tips</div><select id="fType"><option value="expense">Izdevumi</option><option value="income">Ienākumi</option><option value="saving">Uzkrājums</option></select></div><div class="field"><div class="label">Kategorija</div><select id="fCat">${categories.map(c=>`<option>${c}</option>`).join('')}</select></div><button class="btn" style="width:100%" onclick="addTx()">Saglabāt</button>`);
+}
+function addTx(){const desc=document.getElementById('fDesc').value.trim(),amount=Number(document.getElementById('fAmount').value),type=document.getElementById('fType').value,cat=document.getElementById('fCat').value;if(!desc||!amount)return;state.transactions.push({id:Date.now(),date:todayKey(),desc,amount,type,cat});save();closeModal();render();showToast('Darījums saglabāts')}
+function deleteTx(id){state.transactions=state.transactions.filter(x=>x.id!==id);save();render()}
+function renderBudget(){
+ const inc=state.transactions.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0),exp=state.transactions.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0),sav=state.transactions.filter(x=>x.type==='saving').reduce((s,x)=>s+x.amount,0);
+ document.getElementById('incomeTotal').textContent=fmt(inc);document.getElementById('expenseTotal').textContent=fmt(exp);document.getElementById('savingTotal').textContent=fmt(sav);document.getElementById('budgetBalance').textContent=fmt(inc-exp-sav);
+ const arr=[...state.transactions].sort((a,b)=>b.id-a.id).slice(0,20);
+ document.getElementById('txList').innerHTML=arr.length?arr.map(x=>`<div class="tx ${x.type==='income'?'income':''}"><div class="tx-dot"></div><div class="desc"><b>${esc(x.desc)}</b><div class="subtle">${lvDate(parseKey(x.date))} · ${esc(x.cat)}</div></div><div class="amount ${x.type==='income'?'positive':'negative'}">${x.type==='income'?'+':'−'}${fmt(x.amount)}</div><button class="delete" onclick="deleteTx(${x.id})">×</button></div>`).join(''):'<div class="empty-state">Vēl nav darījumu.</div>';
+}
+
+function getPeriod(offset=periodOffset){const now=new Date();const base=new Date(now.getFullYear(),now.getMonth()+offset,15);return {start:base,end:new Date(base.getFullYear(),base.getMonth()+1,14)}}
+function movePeriod(n){periodOffset+=n;renderCalendar()}
+function savePeriodBudget(){const p=getPeriod(),key=dateKey(p.start);state.periodBudgets[key]=Number(document.getElementById('periodBudget').value)||0;save();renderCalendar()}
+function renderCalendar(){
+ const p=getPeriod(),pkey=dateKey(p.start),budget=state.periodBudgets[pkey]??700;
+ document.getElementById('periodBudget').value=budget;document.getElementById('periodText').textContent=lvDate(p.start)+'–'+lvDate(p.end);document.getElementById('calBudget').textContent=fmt(budget);
+ const work=[];for(let d=new Date(p.start);d<=p.end;d.setDate(d.getDate()+1))if(d.getDay()>0&&d.getDay()<6)work.push(new Date(d));
+ const daily=work.length?budget/work.length:0;document.getElementById('workdays').textContent=work.length;document.getElementById('dailyBudget').textContent=fmt(daily);
+ const expenses=state.transactions.filter(x=>x.type==='expense'&&x.date>=pkey&&x.date<=dateKey(p.end)).reduce((s,x)=>s+x.amount,0);document.getElementById('periodExpenses').textContent=fmt(expenses);
+ const firstOffset=(p.start.getDay()+6)%7;let out='';for(let i=0;i<firstOffset;i++)out+='<div class="empty"></div>';
+ let carry=0, marked=false;
+ for(let d=new Date(p.start);d<=p.end;d.setDate(d.getDate()+1)){
+  const cur=new Date(d), wk=cur.getDay()===0||cur.getDay()===6,key=dateKey(cur),today=key===todayKey();
+  if(wk){out+=`<div class="day weekend ${today?'today':''}"><div class="daynum">${cur.getDate()}</div></div>`;continue}
+  const exp=state.transactions.filter(x=>x.type==='expense'&&x.date===key).reduce((s,x)=>s+x.amount,0);
+  const available=daily+carry,balance=available-exp;
+  const future=cur>new Date(new Date().setHours(0,0,0,0));
+  let cls='day '+(today?'today ':'')+(!marked&&future&&balance>0?'future-positive':'');if(!marked&&future&&balance>0)marked=true;
+  out+=`<div class="${cls}"><div class="daynum">${cur.getDate()}</div><div class="daybase">${fmt(daily)}</div>${exp?`<div class="dayexp">−${fmt(exp)}</div>`:''}<div class="daybal">${fmt(balance)}</div></div>`;
+  carry=balance<0?balance:0;
+ }
+ document.getElementById('calendarGrid').innerHTML=out;
+}
+
+function resetDemo(){if(confirm('Dzēst visus šīs lietotnes datus no šīs ierīces?')){localStorage.removeItem(KEY);location.reload()}}
+function render(){renderTasks();renderShop();renderRecipes();renderBudget();renderCalendar()}
+render();
+
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=1').catch(()=>{}))}
+</script>
+</body>
+</html>
