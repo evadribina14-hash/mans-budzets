@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Mans budžets",
+  "short_name": "Budžets",
+  "description": "Personīgā budžeta, iepirkumu, recepšu, uzdevumu un kalendāra lietotne.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5FAFE",
+  "theme_color": "#DCEFFB",
+  "icons": [
+    {
+      "src": "icon-192.png?v=9",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png?v=9",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
