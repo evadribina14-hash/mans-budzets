@@ -1,4 +1,4 @@
-const CACHE = 'mans-budzets-soft-blue-v9';
+const CACHE = 'mans-budzets-app-v10';
 
 const ASSETS = [
   './',
@@ -11,20 +11,17 @@ const ASSETS = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .catch(() => {})
   );
+
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE)
-          .map(key => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
+    self.clients.claim()
   );
 });
 
@@ -42,9 +39,9 @@ self.addEventListener('fetch', event => {
         .then(response => {
           const copy = response.clone();
 
-          caches.open(CACHE).then(cache => {
-            cache.put('./index.html', copy);
-          });
+          caches.open(CACHE)
+            .then(cache => cache.put('./index.html', copy))
+            .catch(() => {});
 
           return response;
         })
@@ -55,8 +52,7 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request);
-    })
+    caches.match(event.request)
+      .then(cached => cached || fetch(event.request))
   );
 });
